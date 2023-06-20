@@ -1,53 +1,87 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useHistory, useParams } from 'react-router-dom';
 import useFetch from "../useFetch";
+import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from "react-datepicker";
+import Switch from "react-switch";
 
 const UpdateToDo = () => {
 
-    const { id } = useParams();
+  const { id } = useParams();
 
-    const [name, setName] = useState('');
-    const [discription, setDiscription] = useState('')
+  const {
+    data: todos, isPending, error
+  } = useFetch("http://localhost:8000/todos/" + id);
 
-    const history = useHistory();
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('')
+  const [dueDate, setDueDate] = useState(null);
+  const [status, setStatus] = useState(false);
+ 
+  const history = useHistory();
 
-    const {
-        data: todos
-      } = useFetch("http://localhost:8000/todos/" + id);
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const todos =  { name, discription };
-        
-        fetch('http://localhost:8000/todos', {
-            method: 'POST',
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(todos)
-        }).then(() => {
-            console.log("new task")
-            history.push('/')
-        })
+  useEffect(() => {
+    if (todos) {
+      setName(todos.name);
+      setDescription(todos.description);
+      setDueDate(todos.dueDate)
+      setStatus(todos.status)
     }
+  }, [todos]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const todos = { name, description, status };
+
+    fetch('http://localhost:8000/todos/' + id, {
+      method: 'PUT',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(todos)
+    }).then(() => {
+      console.log("new task")
+      history.push('/')
+    })
+  }
 
   return (
     <div className="create">
-      <h2>Add New Task</h2>
-      <form onSubmit={handleSubmit}>
-        <label>Task Name:</label>
-        <input 
-            type="text" 
-            required 
-            value={todos.name}
-            onChange={(e) => setName(e.target.value)}
-        />
-        <label>Description</label>
-        <textarea 
-            required
-            value={todos.discription}
-            onChange={(e) => setDiscription(e.target.value)}
-        ></textarea>
-        <button>Update Task</button>
-      </form>
+      {isPending && <div>Loading...</div>}
+      {error && <div>{error}</div>}
+      {todos && (
+        <div>
+          <h2>Add New Task</h2>
+          <form onSubmit={handleSubmit}>
+            <label>Task Name:</label>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <label>Description</label>
+            <textarea
+              required
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            ></textarea>
+            {/* <label>Due Date:</label>
+        <DatePicker
+          selected={dueDate}
+          onChange={(date) => setDueDate(date)}
+          dateFormat="dd/MM/yyyy"
+        /> */}
+        <label>
+          Status:{" "}
+          <Switch
+            onChange={(checked) => setStatus(checked)}
+            checked={status}
+          />
+        </label>
+            <button>Update Task</button>
+          </form>
+        </div>
+      )}
+
     </div>
   );
 };

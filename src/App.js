@@ -3,7 +3,6 @@ import "./index.js";
 import Navbar from "./Navbar";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import AddTodo from "./TodoList/AddTodo.js";
-import ToDoDetails from "./TodoList/TodoDetails.js";
 import NotFound from "./NotFound.js";
 import UpdateTask from "./TodoList/UpdateTask.js";
 
@@ -19,9 +18,6 @@ function App() {
             </Route>
             <Route path="/newTask">
               <AddTodo />
-            </Route>
-            <Route path="/task/:id">
-              <ToDoDetails />
             </Route>
             <Route path="/update/:id">
               <UpdateTask />
